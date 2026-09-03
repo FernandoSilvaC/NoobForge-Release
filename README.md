@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/versão-1.0-blue?style=flat-square" alt="Versão"/>
+  <img src="https://img.shields.io/badge/versão-1.0.3-blue?style=flat-square" alt="Versão"/>
   <img src="https://img.shields.io/badge/3ds%20Max-2022%20a%202026-orange?style=flat-square" alt="3ds Max"/>
   <img src="https://img.shields.io/badge/Unreal%20Engine-4%20%7C%205-purple?style=flat-square" alt="Unreal Engine"/>
   <img src="https://img.shields.io/badge/licença-MIT-green?style=flat-square" alt="Licença"/>
@@ -73,7 +73,10 @@ O **NoobForge** é uma ferramenta MAXScript completa que automatiza a preparaç�
 - Verifica nome, escala, UV Channel 1, materiais e colisões antes do envio
 
 ### 📦 Exportação FBX
+- Exportação em lote da seleção ou de todos os assets `SM_` da cena
 - Um FBX por asset, incluindo colisões e sockets automaticamente
+- Validação opcional antes do lote, com bloqueio de assets inválidos
+- Pastas individuais opcionais e relatório CSV detalhado
 - Exportação em cópias temporárias — a cena nunca é alterada
 - Validação pós-gravação com restauração automática em caso de falha
 
@@ -83,7 +86,7 @@ O **NoobForge** é uma ferramenta MAXScript completa que automatiza a preparaç�
 
 ### Instalação Rápida (Recomendada)
 
-1. Baixe o arquivo `NoobForge_Installer_1.0.mzp` da [página de releases](../../releases)
+1. Baixe o arquivo `NoobForge_Installer_1.0.3.mzp` da [página de releases](../../releases)
 2. Arraste o `.mzp` para qualquer viewport do 3ds Max
 3. Confirme a **instalação limpa** para remover versões anteriores
 4. O NoobForge será aberto automaticamente — não é necessário reiniciar
@@ -290,6 +293,10 @@ Para cada asset, o exportador:
 
 > Se a gravação falhar, o FBX anterior é restaurado automaticamente.
 
+### Exportação em lote
+
+O lote pode trabalhar apenas com os assets selecionados ou localizar automaticamente todas as meshes `SM_` da cena. Antes de cada exportação, o NoobForge pode validar nome, escala, UV e colisões, ignorar assets com erros, criar uma pasta por asset e gerar um relatório CSV com status, avisos, duração e caminho de cada FBX.
+
 ---
 
 ## 🏗️ Arquitetura
@@ -303,9 +310,10 @@ Icone.png                        ← Ícone para toolbar Dark/Light
 modules/
   ├── NoobForge_AssetPrep.ms     ← Materiais, layers, decomposição espacial, primitivas AABB
   ├── NoobForge_CollisionSmart.ms ← PCA/OBB, classificação Auto, preview, divisão orientada
-  ├── NoobForge_Export.ms         ← Associação de nodes e transação FBX segura
+  ├── NoobForge_Export.ms         ← Lote, associação de nodes, relatório e transação FBX segura
   ├── NoobForge_AssetTools.ms     ← Rename, pivot, sockets
   ├── NoobForge_Validation.ms     ← Diagnóstico pré-exportação
+  ├── NoobForge_Updater.ms        ← Consulta, download e validação de updates
   └── NoobForge_UI.ms             ← Interface, banner, eventos, presets
 tests/
   ├── CollisionTest.ms            ← Decomposição de sofá, batch path, viewport
@@ -313,6 +321,7 @@ tests/
   ├── SmartCollisionTest.ms       ← Auto-classificação, PCA 40°, L-shape, preview
   ├── PrimitiveCollisionTest.ms   ← Esfera, cápsula, orientação por eixo
   ├── ExportTest.ms               ← Exportação FBX e reimportação
+  ├── BatchExportTest.ms          ← Lote por cena, validação, pastas e CSV
   ├── MaterialTest.ms             ← Conversão de materiais
   └── UITest.ms                   ← Interface e eventos
 ```
@@ -352,6 +361,7 @@ Os testes automatizados são executados via `3dsmaxbatch.exe` e cobrem:
 | `SmartCollisionTest.ms` | Auto Box/Sphere/Capsule, PCA 40° (1 UBX alinhada), L-shape (regressão PCA), preview/aceite |
 | `PrimitiveCollisionTest.ms` | Esfera (raio correto), cápsula (orientação, seção circular), eixos X/Y/Z |
 | `ExportTest.ms` | FBX completo, reimportação, validação de origem |
+| `BatchExportTest.ms` | Lote por cena, filtro `SM_`, validação, pastas, CSV e restauração da seleção |
 | `MaterialTest.ms` | Conversão Corona/V-Ray/Physical, Multi/Sub, cor base |
 | `UITest.ms` | Interface e eventos |
 
@@ -378,13 +388,29 @@ Os testes automatizados são executados via `3dsmaxbatch.exe` e cobrem:
 
 - [ ] Geração automática de convex hull `UCX_`
 - [ ] Suporte a LODs automáticos
-- [ ] Exportação batch de múltiplos assets
+- [x] Exportação batch de múltiplos assets
 - [ ] Preset de colisão por categoria de asset
 - [ ] Integração com Unreal Engine via Python bridge
 
 ---
 
 ## 📝 Changelog
+
+### v1.0.3 — 2026-09-03
+
+#### 🎉 Novidades
+- Adicionado botão manual "Atualizar" na interface principal
+- Verificações manuais de atualização informam se o plugin já está na última versão
+
+### v1.0.2 — 2026-09-03
+
+#### 🎉 Novidades
+- Exportação FBX em lote pela seleção ou por todos os assets `SM_` da cena
+- Validação prévia com opção de ignorar assets inválidos
+- Pastas individuais por asset e relatório CSV com resultado e duração
+
+#### ✅ Testes
+- Adicionado `BatchExportTest.ms` para validar o fluxo completo do lote
 
 ### v1.0.1 — 2026-09-03
 
@@ -439,23 +465,7 @@ Os testes automatizados são executados via `3dsmaxbatch.exe` e cobrem:
 
 ---
 
-## 🤝 Contribuindo
 
-Contribuições são bem-vindas! Para contribuir:
-
-1. Faça um fork do repositório
-2. Crie uma branch para sua feature (`git checkout -b feature/minha-feature`)
-3. Commit suas mudanças (`git commit -m 'Adiciona minha feature'`)
-4. Push para a branch (`git push origin feature/minha-feature`)
-5. Abra um Pull Request
-
-### Convenções
-
-- **Commits em português** são aceitos
-- **Testes obrigatórios** para novas features de colisão
-- **Não modifique** a malha visual original do usuário
-
----
 
 ## 👤 Créditos
 
