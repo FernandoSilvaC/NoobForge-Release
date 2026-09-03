@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/versão-1.0.3-blue?style=flat-square" alt="Versão"/>
+  <img src="https://img.shields.io/badge/versão-1.0.4-blue?style=flat-square" alt="Versão"/>
   <img src="https://img.shields.io/badge/3ds%20Max-2022%20a%202026-orange?style=flat-square" alt="3ds Max"/>
   <img src="https://img.shields.io/badge/Unreal%20Engine-4%20%7C%205-purple?style=flat-square" alt="Unreal Engine"/>
   <img src="https://img.shields.io/badge/licença-MIT-green?style=flat-square" alt="Licença"/>
@@ -86,7 +86,7 @@ O **NoobForge** é uma ferramenta MAXScript completa que automatiza a preparaç�
 
 ### Instalação Rápida (Recomendada)
 
-1. Baixe o arquivo `NoobForge_Installer_1.0.3.mzp` da [página de releases](../../releases)
+1. Baixe o arquivo `NoobForge_Installer_1.0.4.mzp` da [página de releases](../../releases)
 2. Arraste o `.mzp` para qualquer viewport do 3ds Max
 3. Confirme a **instalação limpa** para remover versões anteriores
 4. O NoobForge será aberto automaticamente — não é necessário reiniciar
@@ -395,6 +395,11 @@ Os testes automatizados são executados via `3dsmaxbatch.exe` e cobrem:
 ---
 
 ## 📝 Changelog
+
+### v1.0.4 — 2026-09-03
+
+#### 🎉 Novidades
+- **Nova Interface (Tabs):** A UI foi reescrita e dividida em 4 abas (Asset, Materiais, Colisões, Exportação), reduzindo drasticamente a altura da janela e organizando melhor as ferramentas.
 
 ### v1.0.3 — 2026-09-03
 
