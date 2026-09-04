@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/versão-1.0.4-blue?style=flat-square" alt="Versão"/>
+  <img src="https://img.shields.io/badge/versão-1.0.5-blue?style=flat-square" alt="Versão"/>
   <img src="https://img.shields.io/badge/3ds%20Max-2022%20a%202026-orange?style=flat-square" alt="3ds Max"/>
   <img src="https://img.shields.io/badge/Unreal%20Engine-4%20%7C%205-purple?style=flat-square" alt="Unreal Engine"/>
   <img src="https://img.shields.io/badge/licença-MIT-green?style=flat-square" alt="Licença"/>
@@ -45,15 +45,19 @@
 
 O **NoobForge** é uma ferramenta MAXScript completa que automatiza a preparação de assets estáticos (Static Meshes) no Autodesk 3ds Max para importação na Unreal Engine. Ele cuida de nomenclatura, pivot, limpeza de materiais, geração inteligente de colisões, validação pré-exportação e exportação FBX — tudo em uma única interface em português do Brasil.
 
-> **A malha visual original nunca é modificada.** Todas as operações trabalham em cópias ou nodes dedicados.
+> A preparação de materiais e a exportação trabalham em cópias. As ações explícitas **Reset XForm**, **Corrigir Shading**, **Renomear** e **Pivot** alteram somente os assets selecionados e podem ser desfeitas com Undo.
 
 ---
 
 ## ✨ Recursos
 
 ### 🔧 Asset e Pivot
-- Renomeia assets com prefixo `SM_` e sincroniza nomes de colisões e sockets
+- Padroniza geometria como `SM_`, colisões como `UCX_` e materiais como `M_`
+- Sanitiza espaços, hífens, acentos e caracteres especiais
 - Posiciona pivot na **base**, no **centro** ou no **piso mundial (Z=0)**
+- Aplica **Reset XForm + Collapse** preservando pivot e helpers filhos
+- Limpa Smoothing Groups, aplica Auto Smooth configurável e unifica normais opcionalmente
+- Cria helpers `SOCKET_` no pivot e mantém o vínculo com o asset no FBX
 
 ### 🎨 Materiais
 - Converte Corona, V-Ray, Physical e outros materiais para **Standard limpo**
@@ -86,7 +90,7 @@ O **NoobForge** é uma ferramenta MAXScript completa que automatiza a preparaç�
 
 ### Instalação Rápida (Recomendada)
 
-1. Baixe o arquivo `NoobForge_Installer_1.0.4.mzp` da [página de releases](../../releases)
+1. Baixe o arquivo `NoobForge_Installer_1.0.5.mzp` da [página de releases](../../releases)
 2. Arraste o `.mzp` para qualquer viewport do 3ds Max
 3. Confirme a **instalação limpa** para remover versões anteriores
 4. O NoobForge será aberto automaticamente — não é necessário reiniciar
@@ -112,9 +116,10 @@ O ícone é instalado automaticamente em `#userIcons\Dark\NoobForge` e `#userIco
 
 1. Selecione uma mesh visual na cena
 2. Abra o NoobForge (toolbar ou `Scripting > Run Script`)
-3. Renomeie o asset com `SM_` e posicione o pivot
-4. Gere o preview de colisões e revise no viewport
-5. Aceite as colisões, valide e exporte o FBX
+3. Padronize os nomes, posicione o pivot e aplique Reset XForm
+4. Corrija shading/normais e crie os sockets necessários
+5. Gere o preview de colisões e revise no viewport
+6. Aceite as colisões, valide e exporte o FBX
 
 ---
 
@@ -123,8 +128,8 @@ O ícone é instalado automaticamente em `#userIcons\Dark\NoobForge` e `#userIco
 ```mermaid
 graph TD
     A[Selecionar mesh visual] --> B[Renomear com SM_]
-    B --> C[Definir pivot]
-    C --> D[Preparar materiais]
+    B --> C[Definir pivot e Reset XForm]
+    C --> D[Corrigir shading e preparar materiais]
     D --> E[Gerar preview de colisões]
     E --> F{Revisar no viewport}
     F -->|Aceitar| G[Aceitar colisões]
@@ -138,13 +143,14 @@ graph TD
 | Etapa | Ação | Resultado |
 |-------|------|-----------|
 | 1 | Otimize a malha (ProOptimizer) | Mesh com polycount adequado |
-| 2 | Renomeie e defina o pivot | `SM_NomeDoAsset` com pivot posicionado |
-| 3 | Prepare os materiais | Cópia `_UE` com materials Standard na layer `NoobForge_Export` |
-| 4 | Escolha preset e gere preview | Primitivas laranjas na layer `NoobForge_CollisionPreview` |
-| 5 | Revise as primitivas no viewport | Confirme cobertura e quantidade |
-| 6 | Aceite ou descarte | Primitivas finais na layer `NoobForge_Collision` |
-| 7 | Valide | Relatório de erros e avisos |
-| 8 | Exporte | Um FBX por mesh visual |
+| 2 | Padronize nomes e defina o pivot | Geometria `SM_`, colisões `UCX_`, materiais `M_` e pivot posicionado |
+| 3 | Reset XForm e ajuste o shading | Editable Poly com transform limpo, smoothing e normais revisados |
+| 4 | Crie sockets e prepare materiais | Helpers linkados e cópia `_UE` com Standard na layer `NoobForge_Export` |
+| 5 | Escolha preset e gere preview | Primitivas laranjas na layer `NoobForge_CollisionPreview` |
+| 6 | Revise as primitivas no viewport | Confirme cobertura e quantidade |
+| 7 | Aceite ou descarte | Primitivas finais na layer `NoobForge_Collision` |
+| 8 | Valide | Relatório de erros e avisos |
+| 9 | Exporte | Um FBX por mesh visual |
 
 ---
 
@@ -244,6 +250,12 @@ Cada objeto selecionado recebe uma **cópia** na layer `NoobForge_Export`. Somen
 
 Na exportação com "Pivot como origem", somente cópias temporárias são deslocadas. Uma bancada suspensa preserva a altura correta no FBX e o objeto da cena permanece no lugar.
 
+### Preparação de transform e shading
+
+- **Reset XForm + Collapse** aplica o utilitário nativo, converte a stack para Editable Poly e restaura o pivot e a posição mundial dos filhos.
+- **Corrigir Shading / Normais** limpa os Smoothing Groups existentes, pode executar Unify Normals e aplica Auto Smooth no ângulo escolhido (60° por padrão).
+- **Criar Socket no Pivot** gera um Point Helper `SOCKET_`, visível no viewport e linkado diretamente à mesh principal.
+
 ---
 
 ## ✅ Validação
@@ -252,15 +264,17 @@ A validação pré-exportação verifica:
 
 | Verificação | Severidade | Descrição |
 |-------------|:----------:|-----------|
-| Prefixo `SM_` | ⚠️ Aviso | Nome deve começar com `SM_` |
+| Prefixo `SM_` | ❌ Erro | Nome deve começar com `SM_` |
 | Caracteres inválidos | ❌ Erro | Espaços, pontos e caracteres especiais |
 | Escala zero | ❌ Erro | Componente de escala ≤ 0.001 |
 | Escala não-uniforme | ❌ Erro | Box e Sphere falham na Unreal |
 | Escala ≠ 100% | ⚠️ Aviso | Transform de escala não resetado |
 | Escala negativa | ⚠️ Aviso | Espelhamento — revise Reset XForm |
 | Material ausente | ⚠️ Aviso | Nenhum material atribuído |
+| Materiais | ❌ Erro | Prefixo `M_` ausente ou caracteres inválidos |
 | UV Channel 1 | ❌ Erro | UV ausente ou vazio |
-| Colisões | ⚠️ / ❌ | Nenhuma (aviso) ou mais de 64 (erro) |
+| Colisões | ⚠️ / ❌ | Nome fora de `UCX_[Asset]_[Index]` ou mais de 64 (erro); nenhuma (aviso) |
+| Sockets | ⚠️ / ❌ | Helper sem vínculo direto ou nome inválido |
 
 ---
 
@@ -311,7 +325,7 @@ modules/
   ├── NoobForge_AssetPrep.ms     ← Materiais, layers, decomposição espacial, primitivas AABB
   ├── NoobForge_CollisionSmart.ms ← PCA/OBB, classificação Auto, preview, divisão orientada
   ├── NoobForge_Export.ms         ← Lote, associação de nodes, relatório e transação FBX segura
-  ├── NoobForge_AssetTools.ms     ← Rename, pivot, sockets
+  ├── NoobForge_AssetTools.ms     ← Nomes, pivot, Reset XForm, shading e sockets
   ├── NoobForge_Validation.ms     ← Diagnóstico pré-exportação
   ├── NoobForge_Updater.ms        ← Consulta, download e validação de updates
   └── NoobForge_UI.ms             ← Interface, banner, eventos, presets
@@ -323,7 +337,11 @@ tests/
   ├── ExportTest.ms               ← Exportação FBX e reimportação
   ├── BatchExportTest.ms          ← Lote por cena, validação, pastas e CSV
   ├── MaterialTest.ms             ← Conversão de materiais
-  └── UITest.ms                   ← Interface e eventos
+  ├── AssetToolsTest.ms           ← Nomes, Reset XForm, shading, pivot e sockets
+  ├── UITest.ms                   ← Interface, abas e eventos
+  ├── UpdaterTest.ms              ← Release pública, versão e SHA-256
+  ├── ProtectedReleaseTest.ms     ← Execução usando somente os módulos protegidos
+  └── VersionConsistencyTest.ms   ← Consistência da versão no pacote
 ```
 
 ### Diagrama de Dependências
@@ -363,12 +381,16 @@ Os testes automatizados são executados via `3dsmaxbatch.exe` e cobrem:
 | `ExportTest.ms` | FBX completo, reimportação, validação de origem |
 | `BatchExportTest.ms` | Lote por cena, filtro `SM_`, validação, pastas, CSV e restauração da seleção |
 | `MaterialTest.ms` | Conversão Corona/V-Ray/Physical, Multi/Sub, cor base |
-| `UITest.ms` | Interface e eventos |
+| `AssetToolsTest.ms` | Reset XForm, pivot preservado, Auto Smooth, nomes estritos, sockets e hierarquia de exportação |
+| `UITest.ms` | Interface, abas, bloqueio durante operações e eventos |
+| `UpdaterTest.ms` | Release pública, versão semântica, múltiplos assets e SHA-256 |
+| `ProtectedReleaseTest.ms` | Banner, interface e ferramentas carregados exclusivamente dos módulos `.mse` do MZP |
+| `VersionConsistencyTest.ms` | Coerência da versão entre manifesto, instalador, código e README |
 
 ### Executando os testes
 
 ```bat
-"C:\Program Files\Autodesk\3ds Max 2026\3dsmaxbatch.exe" -sceneFile "" tests\SmartCollisionTest.ms
+"C:\Program Files\Autodesk\3ds Max 2026\3dsmaxbatch.exe" tests\SmartCollisionTest.ms
 ```
 
 ---
@@ -395,6 +417,21 @@ Os testes automatizados são executados via `3dsmaxbatch.exe` e cobrem:
 ---
 
 ## 📝 Changelog
+
+### v1.0.5 — 2026-09-04
+
+#### Novidades
+- Reset XForm com collapse para Editable Poly, preservando pivot e helpers filhos
+- Correção de shading com Clear Smoothing Groups, Auto Smooth configurável e Unify Normals opcional
+- Criação visual de sockets `SOCKET_` no pivot com hierarquia preservada no FBX
+- Padronização em um clique para `SM_`, `UCX_` e `M_`, incluindo sanitização de nomes
+- Exportação temporária agora reconstrói os vínculos entre asset e sockets copiados
+
+#### Correções
+- Metadados e instalador alinhados com a versão do pacote
+- O ambiente privado passa a carregar os módulos-fonte durante o desenvolvimento
+- Verificação de atualização preparada para releases com assets adicionais
+- Abas e atualização manual são bloqueadas durante operações em andamento
 
 ### v1.0.4 — 2026-09-03
 
