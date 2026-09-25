@@ -1,520 +1,108 @@
-<p align="center">
-  <img src="Banner.png" alt="NoobForge Banner" width="720"/>
-</p>
-
-<h1 align="center">NoobForge</h1>
-
-<p align="center">
-  <strong>Preparação de assets do 3ds Max para Unreal Engine</strong><br>
-  Colisões inteligentes · Materiais limpos · Exportação FBX segura
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/versão-1.0.5-blue?style=flat-square" alt="Versão"/>
-  <img src="https://img.shields.io/badge/3ds%20Max-2022%20a%202026-orange?style=flat-square" alt="3ds Max"/>
-  <img src="https://img.shields.io/badge/Unreal%20Engine-4%20%7C%205-purple?style=flat-square" alt="Unreal Engine"/>
-  <img src="https://img.shields.io/badge/licença-MIT-green?style=flat-square" alt="Licença"/>
-  <img src="https://img.shields.io/badge/idioma-pt--BR-yellow?style=flat-square" alt="Idioma"/>
-</p>
-
----
-
-## 📋 Sumário
-
-- [Sobre](#-sobre)
-- [Recursos](#-recursos)
-- [Instalação](#-instalação)
-- [Primeiros Passos](#-primeiros-passos)
-- [Fluxo de Trabalho](#-fluxo-de-trabalho)
-- [Colisões Inteligentes](#-colisões-inteligentes)
-- [Materiais](#-materiais)
-- [Pivot](#-pivot)
-- [Validação](#-validação)
-- [Exportação FBX](#-exportação-fbx)
-- [Arquitetura](#-arquitetura)
-- [Testes](#-testes)
-- [Limitações Conhecidas](#-limitações-conhecidas)
-- [Roadmap](#-roadmap)
-- [Changelog](#-changelog)
-- [Contribuindo](#-contribuindo)
-- [Créditos](#-créditos)
-
----
-
-## 🎯 Sobre
-
-O **NoobForge** é uma ferramenta MAXScript completa que automatiza a preparação de assets estáticos (Static Meshes) no Autodesk 3ds Max para importação na Unreal Engine. Ele cuida de nomenclatura, pivot, limpeza de materiais, geração inteligente de colisões, validação pré-exportação e exportação FBX — tudo em uma única interface em português do Brasil.
-
-> A preparação de materiais e a exportação trabalham em cópias. As ações explícitas **Reset XForm**, **Corrigir Shading**, **Renomear** e **Pivot** alteram somente os assets selecionados e podem ser desfeitas com Undo.
-
----
-
-## ✨ Recursos
-
-### 🔧 Asset e Pivot
-- Padroniza geometria como `SM_`, colisões como `UCX_` e materiais como `M_`
-- Sanitiza espaços, hífens, acentos e caracteres especiais
-- Posiciona pivot na **base**, no **centro** ou no **piso mundial (Z=0)**
-- Aplica **Reset XForm + Collapse** preservando pivot e helpers filhos
-- Limpa Smoothing Groups, aplica Auto Smooth configurável e unifica normais opcionalmente
-- Cria helpers `SOCKET_` no pivot e mantém o vínculo com o asset no FBX
-
-### 🎨 Materiais
-- Converte Corona, V-Ray, Physical e outros materiais para **Standard limpo**
-- Preserva UVs, Material IDs, nomes de slots e estruturas Multi/Sub-Object
-- Opção de manter a cor base original ou usar cinza neutro
-
-### 💥 Colisões Inteligentes
-- Gera colisões `UBX_` (Box), `USP_` (Sphere) e `UCP_` (Capsule) reconhecidas pela Unreal
-- **Modo Auto** analisa cada pedaço e escolhe a primitiva mais adequada
-- **PCA/OBB** orienta caixas e cápsulas conforme a geometria real — uma viga inclinada a 40° recebe uma única UBX girada
-- **Divisão adaptativa** com eixos PCA + eixos locais para formas ortogonais (ex: balcão em "L")
-- **4 presets** prontos: Mobiliário, Arquitetura, Orgânico, Physics Prop
-- **Preview laranja** para revisão visual antes de aceitar
-- Aceita substituindo colisões anteriores ou descarta o preview
-
-### ✅ Validação
-- Verifica nome, escala, UV Channel 1, materiais e colisões antes do envio
-
-### 📦 Exportação FBX
-- Exportação em lote da seleção ou de todos os assets `SM_` da cena
-- Um FBX por asset, incluindo colisões e sockets automaticamente
-- Validação opcional antes do lote, com bloqueio de assets inválidos
-- Pastas individuais opcionais e relatório CSV detalhado
-- Exportação em cópias temporárias — a cena nunca é alterada
-- Validação pós-gravação com restauração automática em caso de falha
-
----
-
-## 📥 Instalação
-
-### Instalação Rápida (Recomendada)
-
-1. Baixe o arquivo `NoobForge_Installer_1.0.5.mzp` da [página de releases](../../releases)
-2. Arraste o `.mzp` para qualquer viewport do 3ds Max
-3. Confirme a **instalação limpa** para remover versões anteriores
-4. O NoobForge será aberto automaticamente — não é necessário reiniciar
-
-### Botão Permanente na Toolbar
-
-1. Menu **Customize** → **Customize User Interface**
-2. Na aba **Toolbars**, selecione a categoria **NoobViz**
-3. Arraste a ação **NoobForge_Open** para uma toolbar
+<p align="center"><img src="Banner.png" alt="NoobForge" width="720"></p>
 
-O ícone é instalado automaticamente em `#userIcons\Dark\NoobForge` e `#userIcons\Light\NoobForge` para os temas Dark e Light.
+# NoobForge 1.0.8
 
-### Instalação Manual (Desenvolvimento)
+Preparação de assets do 3ds Max para Unreal Engine: colisões simples, pivots por peça e exportação FBX em lote.
 
-```
-1. Clone este repositório
-2. No 3ds Max: Scripting > Run Script > NoobForge.ms
-```
+Desenvolvido por **NoobDev** — [GitHub](https://github.com/FernandoSilvaC).
 
----
+## Instalação
 
-## 🚀 Primeiros Passos
+1. Baixe `NoobForge_Installer_1.0.8.mzp` no [repositório público de releases](https://github.com/FernandoSilvaC/NoobForge-Release/releases).
+2. Arraste o arquivo para uma viewport do 3ds Max.
+3. Para adicionar à toolbar, procure a categoria **NoobViz**, ação **NoobForge_Open**.
 
-1. Selecione uma mesh visual na cena
-2. Abra o NoobForge (toolbar ou `Scripting > Run Script`)
-3. Padronize os nomes, posicione o pivot e aplique Reset XForm
-4. Corrija shading/normais e crie os sockets necessários
-5. Gere o preview de colisões e revise no viewport
-6. Aceite as colisões, valide e exporte o FBX
-
----
+O instalador permite limpar versões anteriores. A instalação é por usuário e a ferramenta abre sem reiniciar o Max. Não extraia nem renomeie o MZP.
 
-## 🔄 Fluxo de Trabalho
+Validação automatizada realizada no **3ds Max 2026**. Outras versões precisam de teste específico; este README não declara compatibilidade já comprovada com todas elas.
 
-```mermaid
-graph TD
-    A[Selecionar mesh visual] --> B[Renomear com SM_]
-    B --> C[Definir pivot e Reset XForm]
-    C --> D[Corrigir shading e preparar materiais]
-    D --> E[Gerar preview de colisões]
-    E --> F{Revisar no viewport}
-    F -->|Aceitar| G[Aceitar colisões]
-    F -->|Descartar| E
-    G --> H[Validar asset]
-    H --> I[Exportar FBX]
-```
+## Ferramentas
 
-### Passo a passo detalhado
+### Asset / Pivot
 
-| Etapa | Ação | Resultado |
-|-------|------|-----------|
-| 1 | Otimize a malha (ProOptimizer) | Mesh com polycount adequado |
-| 2 | Padronize nomes e defina o pivot | Geometria `SM_`, colisões `UCX_`, materiais `M_` e pivot posicionado |
-| 3 | Reset XForm e ajuste o shading | Editable Poly com transform limpo, smoothing e normais revisados |
-| 4 | Crie sockets e prepare materiais | Helpers linkados e cópia `_UE` com Standard na layer `NoobForge_Export` |
-| 5 | Escolha preset e gere preview | Primitivas laranjas na layer `NoobForge_CollisionPreview` |
-| 6 | Revise as primitivas no viewport | Confirme cobertura e quantidade |
-| 7 | Aceite ou descarte | Primitivas finais na layer `NoobForge_Collision` |
-| 8 | Valide | Relatório de erros e avisos |
-| 9 | Exporte | Um FBX por mesh visual |
+- Nomenclatura `SM_`, com atualização das colisões associadas.
+- Pivot na base, centro ou centro X/Y de cada peça com Z=0 mundial.
+- Reset XForm + Collapse, Auto Smooth, unificação de normais e limpeza de geometria.
+- Helpers para sockets.
 
----
+Renomeação, pivots, Reset XForm e shading alteram os objetos selecionados. Salve a cena antes de operações que colapsam a stack.
 
-## 💥 Colisões Inteligentes
+### Colisões
 
-### Presets de Colisão
+- Caixas orientadas `UBX_`, esferas `USP_`, cápsulas `UCP_` e Convex Hull `UCX_`.
+- Modo Auto e presets para mobiliário, arquitetura, orgânicos e objetos físicos.
+- Preview editável antes da aceitação.
+- Gerar um preview não descarta previews de outros assets.
+- Aceitar/descartar atua nos previews selecionados ou nos previews do asset selecionado.
+- A substituição valida os previews e prepara as novas colisões antes de remover as anteriores.
+- Novas colisões registram o identificador do objeto; colisões antigas usam correspondência estrita de nomes.
 
-| Preset | Limite padrão | Uso recomendado |
-|--------|:------------:|-----------------|
-| **Mobiliário** | 24 | Sofás, mesas, cadeiras, armários |
-| **Arquitetura** | 24 | Paredes, pilares, bancadas, escadas |
-| **Orgânico** | 24 | Pedras, troncos, vegetação |
-| **Physics Prop** | 24 | Objetos que simulam física |
-| **Personalizado** | 1–64 | Ajuste manual do spinner |
+A decomposição e as métricas são heurísticas. Revise espaços de circulação, assentos e vazios importantes. Cobertura é amostrada sobre a malha de trabalho; volume acumulado não desconta sobreposições entre colisores. Após merge de cenas distintas, confira os vínculos e regenere as colisões quando necessário.
 
-### Modo Auto Inteligente
+### Exportação FBX
 
-Cada pedaço é analisado individualmente por PCA (Principal Component Analysis):
+- Um FBX por asset, por seleção ou por todos os assets `SM_` da cena.
+- Inclusão de colisões e sockets, validação prévia, subpastas e relatório CSV.
+- Exportação por cópias temporárias, preservando a cena original.
+- Bloqueio de nomes de destino duplicados antes de gravar o lote.
+- Opção **Pivot como origem** para respeitar o pivot escolhido.
+- Opção **Cada peça: centro X/Y e Z=0** para preservar a altura de telhados e outros objetos elevados.
+- CSV com pivots mundiais e unidades para auxiliar na recomposição da montagem.
 
-| Critério | Resultado |
-|----------|-----------|
-| Superfícies ortogonais (> 96.5%) | `Box (UBX)` |
-| Região esférica (roundness > 0.78, variação radial < 0.16) | `Sphere (USP)` |
-| Região alongada com seção circular | `Capsule (UCP)` |
-| Forma ambígua | `Box (UBX)` como fallback |
+Arquivos separados não recompõem automaticamente a montagem na Unreal. A importação e o posicionamento na engine ainda devem ser conferidos.
 
-### Orientação por PCA/OBB
+### Materiais
 
-As caixas e cápsulas são orientadas conforme a **forma real da geometria**, não apenas pelo bounding box axis-aligned:
+A preparação/conversão de materiais foi removida. Use sua ferramenta de materiais antes da exportação. A coleta opcional apenas copia imagens encontradas; não faz bake nem conversão de shaders. Texturas diferentes com o mesmo nome ainda exigem revisão.
 
-- Uma **viga inclinada a 40°** recebe uma única UBX girada a ~40°
-- Um **sofá** gera múltiplas caixas para braços, assento e encosto
-- Uma **forma em "L"** é decomposta com eixos ortogonais (world axes) apesar do PCA ser diagonal
-- Peças **simétricas** mantêm eixos world para evitar rotações instáveis entre execuções
+## Atualizações
 
-### Divisão Adaptativa
+O cliente consulta exclusivamente:
 
-O limite de volumes é um **teto**, não uma quantidade obrigatória. A decomposição para automaticamente quando:
+`https://api.github.com/repos/FernandoSilvaC/NoobForge-Release/releases/latest`
 
-- Novas divisões não melhoram o envelope (ganho local < 2%)
-- O ganho global fica abaixo de 0.75%
-- A ocupação já atinge 82% (mesh vs. colisão)
-- O retorno diminuiu drasticamente (platô de ganho)
+- Verificação automática com intervalo de 24 horas após consulta bem-sucedida.
+- Botão **Atualizar** para consulta manual.
+- Consulta assíncrona com prazo de 20 segundos; download com prazo de 180 segundos.
+- Seleção do instalador pela lista de assets, sem depender da ordem dos campos JSON.
+- Validação de origem, versão, SHA-256 e estrutura do MZP antes de executar.
+- Falhas de download não executam o instalador.
+- Confirmação de conclusão pelo instalador, sem tratar erro interno como sucesso.
 
-### Preview e Aceitação
+O update exige um release público publicado, não draft/prerelease, contendo exatamente um `NoobForge_Installer_VERSAO.mzp` com digest SHA-256 fornecido pelo GitHub. Recomenda-se tag `v1.0.8` para esta versão. Anexar o arquivo a um commit ou deixar o release em rascunho não o disponibiliza pelo endpoint `latest`.
 
-```
-SM_Sofa_UE                    ← mesh visual (não é modificada)
-├── NF_PREVIEW_001            ← preview laranja (não exporta)
-├── NF_PREVIEW_002
-└── NF_PREVIEW_003
+A nova rotina só passa a valer depois que a 1.0.8 estiver instalada. Usuários com um atualizador antigo defeituoso podem precisar instalar este MZP manualmente uma vez.
 
-↓ Após aceitar:
+## Novidades da 1.0.8
 
-SM_Sofa_UE
-├── UBX_SM_Sofa_UE_00         ← colisão final (layer NoobForge_Collision)
-├── UBX_SM_Sofa_UE_01
-└── USP_SM_Sofa_UE_00
-```
+- Interface por abas, botões secundários nativos e destaque discreto nas ações principais.
+- Remoção do módulo de materiais/bake.
+- Exportação de peças elevadas com origem no piso e preservação de altura.
+- Proteções contra associação por prefixos semelhantes, previews globais e destinos duplicados.
+- Encaixe envolvente de esferas/cápsulas, métricas de hull e unidades corrigidas.
+- Download de updates com prazo limite, leitura estruturada do JSON e confirmação da instalação.
+- Testes de regressão de segurança e do pacote protegido.
 
-### Nomenclatura Unreal
+## Projeto e build
 
-```
-UBX_NomeDoAsset_00    → Box collision
-USP_NomeDoAsset_00    → Sphere collision
-UCP_NomeDoAsset_00    → Capsule collision
-UCX_NomeDoAsset_00    → Convex hull (manual)
-SOCKET_NomeDoAsset_00 → Socket
-```
+O [repositório privado](https://github.com/FernandoSilvaC/NoobForge) mantém fontes, testes e ferramentas de build. O repositório público recebe somente a distribuição protegida.
 
-O NoobForge reconhece e exporta colisões `UCX_` criadas manualmente. Referência: [Epic Games — FBX Static Mesh Pipeline](https://dev.epicgames.com/documentation/unreal-engine/fbx-static-mesh-pipeline-in-unreal-engine?lang=en-US).
+- `NoobForge.ms`: carregador.
+- `NoobForge_Install.ms`, `NoobForge.mcr`, `mzp.run`: instalação e registro.
+- `modules/`: análise/geração de colisões, ferramentas de asset, exportação, validação, updater e UI.
+- `tests/`: testes executados por `3dsmaxbatch.exe`.
+- `tools/EncryptModules.ms`: geração dos sete módulos `.mse`.
+- `dist/`: MZP gerado localmente; não versionado no Git.
+- `docs/`: revisão técnica e instruções de publicação.
 
----
+O carregador prefere `.ms` durante desenvolvimento e usa `.mse` no pacote protegido. Não envie os módulos `.ms` ao repositório público.
 
-## 🎨 Materiais
+Consulte [publicação da 1.0.8](docs/RELEASE_1.0.8.md) e [revisão técnica](docs/REVISAO_TECNICA.md).
 
-Cada objeto selecionado recebe uma **cópia** na layer `NoobForge_Export`. Somente o material da cópia é substituído.
+## Testes e limites
 
-| Opção | Comportamento |
-|-------|---------------|
-| **Manter cor base** ✅ | Procura `baseColor`, `diffuse`, `color` e cria Standard com essa cor |
-| **Manter cor base** ❌ | Slots recebem cinza neutro `(128, 128, 128)` |
+Suítes: `SafetyRegressionTest`, `SmartCollisionTest`, `BatchExportTest`, `AssemblyExportTest`, `UITest`, `UpdaterTest`, `VersionConsistencyTest` e `ProtectedReleaseTest`.
 
-**Preservados:** UVs, geometria, Material IDs, transforms, nomes de slots, estruturas Multi/Sub-Object.
+Os testes incluem nomes semelhantes, falhas simuladas, persistência após salvar/reabrir, pivots elevados, exportação e carregamento protegido. Logs ficam em `tests/artifacts/`, ignorado pelo Git.
 
-**Compatível com:** Corona, V-Ray, Physical Material, Standard, e qualquer material com propriedade de cor difusa.
-
----
-
-## 📐 Pivot
-
-| Modo | Descrição |
-|------|-----------|
-| **PIVOT BASE** | Centro inferior do bounding box mundial |
-| **CENTRO** | Centro do volume do asset |
-| **PIVOT Z=0** | X/Y centralizados, pivot no piso mundial (sem mover geometria) |
-
-Na exportação com "Pivot como origem", somente cópias temporárias são deslocadas. Uma bancada suspensa preserva a altura correta no FBX e o objeto da cena permanece no lugar.
-
-### Preparação de transform e shading
-
-- **Reset XForm + Collapse** aplica o utilitário nativo, converte a stack para Editable Poly e restaura o pivot e a posição mundial dos filhos.
-- **Corrigir Shading / Normais** limpa os Smoothing Groups existentes, pode executar Unify Normals e aplica Auto Smooth no ângulo escolhido (60° por padrão).
-- **Criar Socket no Pivot** gera um Point Helper `SOCKET_`, visível no viewport e linkado diretamente à mesh principal.
-
----
-
-## ✅ Validação
-
-A validação pré-exportação verifica:
-
-| Verificação | Severidade | Descrição |
-|-------------|:----------:|-----------|
-| Prefixo `SM_` | ❌ Erro | Nome deve começar com `SM_` |
-| Caracteres inválidos | ❌ Erro | Espaços, pontos e caracteres especiais |
-| Escala zero | ❌ Erro | Componente de escala ≤ 0.001 |
-| Escala não-uniforme | ❌ Erro | Box e Sphere falham na Unreal |
-| Escala ≠ 100% | ⚠️ Aviso | Transform de escala não resetado |
-| Escala negativa | ⚠️ Aviso | Espelhamento — revise Reset XForm |
-| Material ausente | ⚠️ Aviso | Nenhum material atribuído |
-| Materiais | ❌ Erro | Prefixo `M_` ausente ou caracteres inválidos |
-| UV Channel 1 | ❌ Erro | UV ausente ou vazio |
-| Colisões | ⚠️ / ❌ | Nome fora de `UCX_[Asset]_[Index]` ou mais de 64 (erro); nenhuma (aviso) |
-| Sockets | ⚠️ / ❌ | Helper sem vínculo direto ou nome inválido |
-
----
-
-## 📦 Exportação FBX
-
-### Preset FBX
-
-| Configuração | Valor |
-|--------------|-------|
-| Formato | FBX Binário 2020 |
-| Unidade | Centímetros |
-| Triangulação | Ativada |
-| Smoothing Groups | Ativados |
-| Tangent Space | Ativado |
-| Animações | Desativadas |
-| Câmeras / Luzes | Desativadas |
-| Texturas incorporadas | Desativadas |
-
-### Processo Seguro
-
-Para cada asset, o exportador:
-
-1. **Coleta** a mesh, suas colisões (`UBX_`, `USP_`, `UCP_`, `UCX_`) e sockets
-2. **Cria cópias** temporárias isoladas
-3. **Aplica** a origem de pivot apenas nas cópias
-4. **Grava** um FBX temporário
-5. **Valida** que o arquivo existe e não está vazio
-6. **Substitui** o destino somente após validação
-7. **Remove** todos os nodes temporários e restaura a seleção
-
-> Se a gravação falhar, o FBX anterior é restaurado automaticamente.
-
-### Exportação em lote
-
-O lote pode trabalhar apenas com os assets selecionados ou localizar automaticamente todas as meshes `SM_` da cena. Antes de cada exportação, o NoobForge pode validar nome, escala, UV e colisões, ignorar assets com erros, criar uma pasta por asset e gerar um relatório CSV com status, avisos, duração e caminho de cada FBX.
-
----
-
-## 🏗️ Arquitetura
-
-```
-NoobForge.ms                    ← Entry point e carregamento de módulos
-NoobForge.mcr                   ← MacroScript para toolbar/ribbon
-NoobForge_Install.ms             ← Instalador (.mzp)
-Banner.png                       ← Banner da interface
-Icone.png                        ← Ícone para toolbar Dark/Light
-modules/
-  ├── NoobForge_AssetPrep.ms     ← Materiais, layers, decomposição espacial, primitivas AABB
-  ├── NoobForge_CollisionSmart.ms ← PCA/OBB, classificação Auto, preview, divisão orientada
-  ├── NoobForge_Export.ms         ← Lote, associação de nodes, relatório e transação FBX segura
-  ├── NoobForge_AssetTools.ms     ← Nomes, pivot, Reset XForm, shading e sockets
-  ├── NoobForge_Validation.ms     ← Diagnóstico pré-exportação
-  ├── NoobForge_Updater.ms        ← Consulta, download e validação de updates
-  └── NoobForge_UI.ms             ← Interface, banner, eventos, presets
-tests/
-  ├── CollisionTest.ms            ← Decomposição de sofá, batch path, viewport
-  ├── CollisionQualityTest.ms     ← Cubo perfeito, L-shape, mesh aberta, escala
-  ├── SmartCollisionTest.ms       ← Auto-classificação, PCA 40°, L-shape, preview
-  ├── PrimitiveCollisionTest.ms   ← Esfera, cápsula, orientação por eixo
-  ├── ExportTest.ms               ← Exportação FBX e reimportação
-  ├── BatchExportTest.ms          ← Lote por cena, validação, pastas e CSV
-  ├── MaterialTest.ms             ← Conversão de materiais
-  ├── AssetToolsTest.ms           ← Nomes, Reset XForm, shading, pivot e sockets
-  ├── UITest.ms                   ← Interface, abas e eventos
-  ├── UpdaterTest.ms              ← Release pública, versão e SHA-256
-  ├── ProtectedReleaseTest.ms     ← Execução usando somente os módulos protegidos
-  └── VersionConsistencyTest.ms   ← Consistência da versão no pacote
-```
-
-### Diagrama de Dependências
-
-```mermaid
-graph TB
-    UI[NoobForge_UI.ms] --> AP[NoobForge_AssetPrep.ms]
-    UI --> CS[NoobForge_CollisionSmart.ms]
-    UI --> EX[NoobForge_Export.ms]
-    UI --> AT[NoobForge_AssetTools.ms]
-    UI --> VA[NoobForge_Validation.ms]
-    CS --> AP
-    EX --> AP
-    VA --> AP
-    VA --> AT
-    
-    style UI fill:#4a9eff,color:#fff
-    style CS fill:#ff6b6b,color:#fff
-    style AP fill:#51cf66,color:#fff
-    style EX fill:#ffd43b,color:#000
-    style AT fill:#cc5de8,color:#fff
-    style VA fill:#ff922b,color:#fff
-```
-
----
-
-## 🧪 Testes
-
-Os testes automatizados são executados via `3dsmaxbatch.exe` e cobrem:
-
-| Teste | Cobertura |
-|-------|-----------|
-| `CollisionTest.ms` | Decomposição de sofá, limites, batch path, viewport display |
-| `CollisionQualityTest.ms` | Cubo perfeito (1 peça), L-shape (decomposta), duplicatas, mesh aberta, escala não-uniforme, mesh degenerada |
-| `SmartCollisionTest.ms` | Auto Box/Sphere/Capsule, PCA 40° (1 UBX alinhada), L-shape (regressão PCA), preview/aceite |
-| `PrimitiveCollisionTest.ms` | Esfera (raio correto), cápsula (orientação, seção circular), eixos X/Y/Z |
-| `ExportTest.ms` | FBX completo, reimportação, validação de origem |
-| `BatchExportTest.ms` | Lote por cena, filtro `SM_`, validação, pastas, CSV e restauração da seleção |
-| `MaterialTest.ms` | Conversão Corona/V-Ray/Physical, Multi/Sub, cor base |
-| `AssetToolsTest.ms` | Reset XForm, pivot preservado, Auto Smooth, nomes estritos, sockets e hierarquia de exportação |
-| `UITest.ms` | Interface, abas, bloqueio durante operações e eventos |
-| `UpdaterTest.ms` | Release pública, versão semântica, múltiplos assets e SHA-256 |
-| `ProtectedReleaseTest.ms` | Banner, interface e ferramentas carregados exclusivamente dos módulos `.mse` do MZP |
-| `VersionConsistencyTest.ms` | Coerência da versão entre manifesto, instalador, código e README |
-
-### Executando os testes
-
-```bat
-"C:\Program Files\Autodesk\3ds Max 2026\3dsmaxbatch.exe" tests\SmartCollisionTest.ms
-```
-
----
-
-## ⚠️ Limitações Conhecidas
-
-- As colisões são **aproximações simples** — revise áreas críticas de interação
-- `USP_` é limitado na Unreal para certos tipos de trace
-- `UBX_` e `USP_` não devem receber escala não-uniforme na Unreal
-- O modo Auto é **determinístico**, mas não substitui decisões artísticas em assets muito irregulares
-- Convex hull `UCX_` automático **não faz parte desta versão**
-- Requer 3ds Max 2022 ou superior (testado até 2026)
-
----
-
-## 🗺️ Roadmap
-
-- [ ] Geração automática de convex hull `UCX_`
-- [ ] Suporte a LODs automáticos
-- [x] Exportação batch de múltiplos assets
-- [ ] Preset de colisão por categoria de asset
-- [ ] Integração com Unreal Engine via Python bridge
-
----
-
-## 📝 Changelog
-
-### v1.0.5 — 2026-09-04
-
-#### Novidades
-- Reset XForm com collapse para Editable Poly, preservando pivot e helpers filhos
-- Correção de shading com Clear Smoothing Groups, Auto Smooth configurável e Unify Normals opcional
-- Criação visual de sockets `SOCKET_` no pivot com hierarquia preservada no FBX
-- Padronização em um clique para `SM_`, `UCX_` e `M_`, incluindo sanitização de nomes
-- Exportação temporária agora reconstrói os vínculos entre asset e sockets copiados
-
-#### Correções
-- Metadados e instalador alinhados com a versão do pacote
-- O ambiente privado passa a carregar os módulos-fonte durante o desenvolvimento
-- Verificação de atualização preparada para releases com assets adicionais
-- Abas e atualização manual são bloqueadas durante operações em andamento
-
-### v1.0.4 — 2026-09-03
-
-#### 🎉 Novidades
-- **Nova Interface (Tabs):** A UI foi reescrita e dividida em 4 abas (Asset, Materiais, Colisões, Exportação), reduzindo drasticamente a altura da janela e organizando melhor as ferramentas.
-
-### v1.0.3 — 2026-09-03
-
-#### 🎉 Novidades
-- Adicionado botão manual "Atualizar" na interface principal
-- Verificações manuais de atualização informam se o plugin já está na última versão
-
-### v1.0.2 — 2026-09-03
-
-#### 🎉 Novidades
-- Exportação FBX em lote pela seleção ou por todos os assets `SM_` da cena
-- Validação prévia com opção de ignorar assets inválidos
-- Pastas individuais por asset e relatório CSV com resultado e duração
-
-#### ✅ Testes
-- Adicionado `BatchExportTest.ms` para validar o fluxo completo do lote
-
-### v1.0.1 — 2026-09-03
-
-#### 🔧 Correções
-- **Corrigida regressão em formas ortogonais (L-shape)** — A divisão orientada por PCA agora combina volume OBB e AABB (`min(OBB, AABB)`) para avaliar filhas. Peças ortogonais usam AABB automaticamente, enquanto peças inclinadas continuam se beneficiando do OBB
-- **Deduplicação de eixos de corte** — Eixos PCA quase-paralelos aos eixos world são filtrados (dot > 0.98), evitando cortes redundantes e empate de pontuação
-- **Volume consistente no loop de subdivisão** — O `currentVolume` agora usa a mesma métrica das filhas
-
-#### ✅ Testes
-- Adicionado teste de regressão para forma em "L" no `SmartCollisionTest.ms`
-
----
-
-### v1.0.0 — 2026
-
-#### 🎉 Release Inicial
-- Interface completa em português do Brasil
-- Rename com `SM_` e sincronização de colisões/sockets
-- Pivot: base, centro e Z=0
-- Conversão de materiais (Corona, V-Ray, Physical → Standard)
-- Colisões inteligentes com PCA/OBB
-- Modo Auto (UBX, USP, UCP)
-- 4 presets de colisão
-- Preview laranja com aceite/descarte
-- Validação pré-exportação
-- Exportação FBX segura com transação
-- Ícones para toolbar Dark/Light
-- Suite de testes automatizados
-
----
-
-<!-- Template para futuras versões:
-
-### vX.Y.Z — YYYY-MM-DD
-
-#### 🎉 Novidades
-- Descrição da feature
-
-#### 🔧 Correções
-- Descrição do bugfix
-
-#### ⚡ Melhorias
-- Descrição da melhoria de performance/UX
-
-#### ⚠️ Breaking Changes
-- Descrição da mudança incompatível
-
-#### ✅ Testes
-- Novos testes adicionados
-
--->
-
----
-
-
-
-## 👤 Créditos
-
-Desenvolvido por **NoobDev** — [@FernandoSilvaC](https://github.com/FernandoSilvaC)
-
----
-
-<p align="center">
-  <sub>Feito com ☕ para a comunidade 3ds Max + Unreal Engine</sub>
-</p>
+Testes no Max não substituem homologação na Unreal. Antes de produção sem supervisão, valide assets reais na versão da engine utilizada, incluindo escala, pivots, sockets e colisão física.
